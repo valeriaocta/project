@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Egg Maze</title>
+  <style>
+    #game {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      display: grid;
+      grid-template-columns: repeat(10, 30px);
+      grid-template-rows: repeat(10, 30px);
+      background-color: #ccc;
+      margin-bottom: 10px;
+    }
+    .cell {
+      width: 30px;
+      height: 30px;
+      box-sizing: border-box;
+      border: 1px solid #bbb;
+    }
+    #player {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background-color: ;
+      z-index: 2;
+    }
+    .egg {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background-color: ;
+      text-align: center;
+      line-height: 30px;
+      font-weight: bold;
+      z-index: 1;
+      transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    }
+    .egg.hide {
+      opacity: 0;
+      transform: scale(0);
+    }
+    #message {
+      font-size: 20px;
+      font-family: sans-serif;
+    }
+    .egg::before {
+      content: '🧩';
+      font-size: 24px;
+    }
+    #player::before {
+      content: '🕵🏻‍♂️';
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="player"></div>
+  </div>
+  <div id="message"></div>
+
+  <script>
+    const game = document.getElementById("game");
+    for (let i = 0; i < 100; i++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      game.appendChild(cell);
+    }
+
+    const targetLetters = ['y','o','u',' ','a','r','e',' ','c','u','t','e'];
+    let collectedCount = 0;
+    const eggs = [];
+    const used = new Set();
+
+    for (let i = 0; i < targetLetters.length; i++) {
+      const egg = document.createElement("div");
+      egg.className = "egg";
+      egg.dataset.letter = targetLetters[i];
+
+      let x, y, key;
+      do {
+        x = Math.floor(Math.random() * 10);
+        y = Math.floor(Math.random() * 10);
+        key = `${x},${y}`;
+      } while (used.has(key));
+      used.add(key);
+
+      egg.dataset.x = x;
+      egg.dataset.y = y;
+      egg.style.left = x * 30 + "px";
+      egg.style.top = y * 30 + "px";
+      game.appendChild(egg);
+      eggs.push(egg);
+    }
+
+    const player = document.getElementById("player");
+    let px = 0, py = 0;
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowRight" && px < 9) px++;
+      if (e.key === "ArrowLeft"  && px > 0) px--;
+      if (e.key === "ArrowDown"  && py < 9) py++;
+      if (e.key === "ArrowUp"    && py > 0) py--;
+      player.style.left = px * 30 + "px";
+      player.style.top  = py * 30 + "px";
+
+      for (let i = eggs.length - 1; i >= 0; i--) {
+        const egg = eggs[i];
+        if (+egg.dataset.x === px && +egg.dataset.y === py) {
+          eggs.splice(i, 1);
+          egg.classList.add("hide");
+          egg.addEventListener("transitionend", () => egg.remove());
+          collectedCount++;
+          if (collectedCount === targetLetters.length) {
+            document.getElementById("message").innerText = targetLetters.join("") + " 💘";
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
